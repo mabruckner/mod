@@ -208,7 +208,7 @@ impl ModDesc {
     }
 }
 fn main() {
-    let desc = ModuleDesc::new_default();
+    let desc = ModDesc::new_default();
     let mut current = ModuleState::new();
     let ret = ModuleState::new();
     let test = ModuleState {
@@ -216,17 +216,17 @@ fn main() {
         near_diff: 0.5,
         far_diff: 0.5,
         hinge: 0.5
-    }
-    let mut hinge = Control::open("/dev/ttyACM0");
-    let mut diff = Control::open("/dev/ttyACM1");
+    };
+    let mut hinge = Control::open("/dev/ttyACM0").unwrap();
+    let mut diff = Control::open("/dev/ttyACM1").unwrap();
     for i in 0..20 {
         thread::sleep(Duration::from_millis(100));
-        desc.mod_set(&diff, &hinge, &current);
+        desc.mod_set(&mut diff, &mut hinge, &current);
         current.approach(&test, 0.05);
     }
     for i in 0..30 {
         thread::sleep(Duration::from_millis(100));
-        desc.mod_set(&diff, &hinge, &current);
+        desc.mod_set(&mut diff, &mut hinge, &current);
         current.approach(&ret, 0.05);
     }
 }
