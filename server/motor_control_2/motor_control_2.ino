@@ -1,4 +1,6 @@
- /*bool a = false;
+#include<EEPROM.h>
+
+/*bool a = false;
 bool b = false;
 int counts = 0;*/
 float sp = 1.0;
@@ -410,11 +412,16 @@ void home() {
 }
 
 void status() {
+  Serial.print("status ");
   Serial.print(encA.position);
-  Serial.print(",");
+  Serial.print(" ");
+  Serial.print(encA.error);
+  Serial.print(" ");
   Serial.print(encB.position);
+  Serial.print(" ");
+  Serial.print(encB.error);
   for(int i=0;i<4;i++){
-    Serial.print(",");
+    Serial.print(" ");
     Serial.print(digitalRead(switches[i]));
   }
   Serial.println("");
@@ -451,6 +458,16 @@ void loop() {
     if(s == 's') {
       status();
     }
+    if(s == 'i') {
+      Serial.print("id ");
+      Serial.print(EEPROM.read(0), DEC);
+      Serial.println();
+    }
+    if(s == 'd') {
+      byte val = (byte)Serial.parseInt();
+      EEPROM.write(0, val);
+    }
+  
   }
   
   /*if((int)(t*100.0) % 20 == 0){
