@@ -1,9 +1,13 @@
 extern crate nalgebra;
 extern crate kiss3d;
 extern crate serial;
+//extern crate actix_web;
+
 use nalgebra::*;
 use kiss3d::window::{Window};
 use kiss3d::light::{Light};
+
+//use actix_web::{web, App, HttpServer, Responder};
 
 use std::f32::consts;
 
@@ -16,6 +20,8 @@ use std::io::{Write, BufRead, BufReader};
 use serial::SerialPort;
 
 use std::sync::mpsc;
+
+
 
 struct ModControl {
     send: mpsc::Sender<ModuleState>
@@ -252,6 +258,7 @@ impl ModuleConfig {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
 struct Cyl {
     z: f32,
     r: f32,
@@ -351,7 +358,7 @@ impl ModDesc {
         ModDesc {
             hinge_cprad: 183.3465,
             axial_cprad: 386.7465 * 8.0 / 3.0,
-            axial_is_a: true,
+            axial_is_a: false,
             coplanar_is_a: true,
         }
     }
@@ -420,6 +427,11 @@ fn command(mod_a: &mut ModControl, mod_b: &mut ModControl) {
             println!("ERROR: {:?}", line);
         }
     }
+}
+
+#[derive(Copy, Clone, Debug)]
+struct ArmState {
+    pos: Cyl
 }
 
 fn main() {

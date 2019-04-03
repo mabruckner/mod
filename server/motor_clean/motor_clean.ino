@@ -1,4 +1,4 @@
-#include<EEPROM.h>
+ #include<EEPROM.h>
 
 /*bool a = false;
 bool b = false;
@@ -133,7 +133,7 @@ void Bridge::set(float value) {
   analogWrite(PWM, (int)(255.0*safe));
   if(value > 0.0) {
     digitalWrite(A, HIGH);
-  }else if (value<0.0) {
+  }else if (value<0.0) { 
     digitalWrite(A, LOW);
   }
 }
@@ -145,8 +145,8 @@ Bridge bridgeA(3, 4);
 Bridge bridgeB(6, 7);
 //PID pidA(4.0, 5.0, 0.5);
 //PID pidB(4.0, 5.0, 0.5); 
-PID pidA(1.0, 0.5, 0.0);
-PID pidB(1.0, 0.5, 0.0); 
+PID pidA(0.5, 0.5, 0.0);
+PID pidB(0.5, 0.5, 0.0); 
 
 int switches[4] = {A0, A1, A2, A3};
 
@@ -155,68 +155,13 @@ int AB = A3;
 
 bool enabled = false;
 
-class Parser {
-  public:
-    Parser();
-    void push(char);
-  private:
-    char command;
-    int len;
-    char buf[16];
-};
-
-Parser::Parser() {
-  command = ' ';
-  len = 0;
-}
-
-void Parser::push(char val) {
-  if(len == 0) {
-    command = val;
-    switch (val) {
-      case 'm': // move to
-        len = 1;
-        break;
-      case 'p': // get position
-        break;
-      case 'h': // home
-        break;
-      case 'e': // enable
-        enabled = true;
-        break;
-      case 'd': // disable
-        enabled = false;
-        break;
-      default:
-        break;
-    }
-  }
-  if(len != 0) {
-    buf[len-1] = val;
-    len++;
-    switch (command) {
-      case 'm':
-        if(len > 8) {
-          pidA.target = *((float*) buf);
-          pidB.target = *((float*) (buf+4));
-          len = 0;
-        }
-        break;
-      default:
-        len = 0;
-    }
-  }
-}
-
-Parser parse();
-
 void setup() {
   Serial.begin(9600);
   for(int i=0; i<4; i++){
     pinMode(switches[i], INPUT);
   }
-  bridgeA.scale = 0.2;
-  bridgeB.scale = 0.2;
+  bridgeA.scale = 0.4;
+  bridgeB.scale = 0.4;
   pidA.target = 0.0;
   pidB.target = 0.0;
 
@@ -230,57 +175,24 @@ void setup() {
     Serial.println(i);
     delay(1000);
   }
-  Serial.println(TCCR1B);
-  Serial.println(TCCR1B);
-  Serial.println(TCCR1B);
+  Serial.println("READY");
   //TCCR1B = (TCCR1B & 0xf8) | 0x3;
   //TCCR2B = (TCCR2B & 0xf8) | 0x02;
   TCCR0B = TCCR0B & B11111000 | B00000001; // for PWM frequency of 62500.00 Hz
   TCCR1B = TCCR1B & B11111000 | B00000001;
   TCCR4B = TCCR4B & B11111000 | B00000010; // for PWM frequency of 31372.55 Hz
-  //testmotor();
-  //home();
-  //status();
-  
-  /*bridgeB.set(0.90);
-  delay(200);
-  bridgeB.set(0.0);*/
+
 }
+
+
 SIGNAL(TIMER0_COMPA_vect) {
   ticks += 1;
-  // the 0x7 is guesswork and handwaving.
-  // I've been using the status function as a benchmark.
-  // It takes 83-84 ticks to execute (approx 1.3ms at 62500Hz) when uninhibited.
-  // At 0x1 (tick executes every time) it takes 538-584 ticks to execute
-  // results:
-  // double: 974-1000
-  // 0x1 : 538-584
-  // 0x3 : 83-84
-  // 0x7 : 83-84
-  // and so on
-  // so it looks like it only chokes when you make a call to tick every time
-  // I'm leaving it at 0x7 just to be safe though.
-  
+ 
   if((ticks & 0xf) == 0) {
     encA.tick();
   }else if((ticks & 0xf)== 0x8) {
     encB.tick();
   }
-}
-
-void testmotor() {
-  Serial.println(encA.position);
-  bridgeA.set(0.8);
-  delay(200);
-  bridgeA.set(0.0);
-  Serial.println(encA.position);
-  delay(1000);
-  Serial.println(encB.position);
-  bridgeB.set(0.8);
-  delay(200);
-  bridgeB.set(0.0);
-  Serial.println(encB.position);
-  delay(3000);
 }
 
 void status() {
@@ -314,6 +226,7 @@ void testloop() {
   Serial.println(ticks);
   delay(1000);
 }
+
 int prev = 0;
 void loop() {
   delay(1000);
@@ -327,6 +240,7 @@ void loop() {
   float controlB = pidB.output(pB, delta);
   bridgeA.set(controlA);
   bridgeB.set(controlB);
+  
   while(Serial.available()) {
     char s = Serial.read();
     if(s == 'm') {
@@ -347,15 +261,5 @@ void loop() {
       byte val = (byte)Serial.parseInt();
       EEPROM.write(0, val);
     }
-  
   }
-  
-  /*if((int)(t*100.0) % 20 == 0){
-    Serial.println(encA.error);
-  }
-  for(int i=0;i<4;i++){
-    Serial.println(digitalRead(switches[i]));
-  }*/
-  // put your main code here, to run repeatedly:
-
 }
