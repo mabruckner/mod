@@ -8,6 +8,32 @@ int stage = 0;
 int tar = 144;
 float t =0;
 int ticks=0;
+/*
+class Ser {
+  public:
+    Ser(int, int, int int);
+    void tick();
+    void set(float);
+  private:
+    int start;
+    int stop;
+    int width;
+    int current;
+    int t;
+    int pin;
+}
+
+Ser::Ser(int s_pin, int s_width, int s_start, int s_stop) {
+  pin = s_pin;
+  width = s_width;
+  start = s_start;
+  stop = s_stop;
+  current = start;
+  t = 0;
+}
+*/
+void Ser::tick() {
+}
 
 class Encoder {
   public:
@@ -156,12 +182,12 @@ int AB = A3;
 bool enabled = false;
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(9600, SERIAL_8E2);
   for(int i=0; i<4; i++){
     pinMode(switches[i], INPUT);
   }
-  bridgeA.scale = 0.4;
-  bridgeB.scale = 0.4;
+  bridgeA.scale = 0.3;
+  bridgeB.scale = 0.3;
   pidA.target = 0.0;
   pidB.target = 0.0;
 

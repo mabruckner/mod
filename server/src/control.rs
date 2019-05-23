@@ -1,10 +1,15 @@
+use std::io;
+use std::io::{BufRead, BufReader, Write};
+use std::thread;
+use std::time::Duration;
 
+use serial::SerialPort;
 
 pub struct Control {
     port: serial::SystemPort,
-    id: Option<usize>,
+    pub id: Option<usize>,
     a: i32,
-    b: i32
+    b: i32,
 }
 
 impl Control {
@@ -13,8 +18,8 @@ impl Control {
         port.reconfigure(&|settings| {
             settings.set_baud_rate(serial::Baud9600)?;
             settings.set_char_size(serial::Bits8);
-            settings.set_parity(serial::ParityNone);
-            settings.set_stop_bits(serial::Stop1);
+            settings.set_parity(serial::ParityEven);
+            settings.set_stop_bits(serial::Stop2);
             settings.set_flow_control(serial::FlowNone);
             Ok(())
         })?;
@@ -22,7 +27,7 @@ impl Control {
             port: port,
             id: None,
             a: 0,
-            b: 0
+            b: 0,
         })
     }
     pub fn request_id(&mut self) {
@@ -34,7 +39,10 @@ impl Control {
         let (ia, ib) = (self.a as f32, self.b as f32);
         while remaining > delta {
             let p = remaining / time;
-            self.set((p*ia + (1.0-p)*(a as f32)) as i32, (p*ib + (1.0-p)*(b as f32)) as i32);
+            self.set(
+                (p * ia + (1.0 - p) * (a as f32)) as i32,
+                (p * ib + (1.0 - p) * (b as f32)) as i32,
+            );
             thread::sleep(Duration::from_millis(100));
             remaining -= delta;
         }
