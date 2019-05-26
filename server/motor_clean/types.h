@@ -23,6 +23,7 @@ class Encoder {
     void reverse();
     void tick();
     float get_vel(float);
+    int get_signed_inv_vel();
     int position;
     int error;
     int inv_vel;

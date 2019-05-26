@@ -64,6 +64,9 @@ void Encoder::tick() {
   bool Bn = digitalRead(Bpin);
   if( count < 0x4000 ) {
       count += 1;
+      if(inv_vel < count) {
+          inv_vel = count;
+      }
   }
   if(An != Astate) {
     if(An == Bstate) {
@@ -103,6 +106,14 @@ float Encoder::get_vel(float ticks_per_second) {
             mag *= -1.0;
         }
         return mag;
+    }
+}
+
+int Encoder::get_signed_inv_vel() {
+    if (positive) {
+        return inv_vel;
+    } else {
+        return -inv_vel;
     }
 }
 

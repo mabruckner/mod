@@ -79,9 +79,13 @@ void status() {
   Serial.print(" ");
   Serial.print(encA.error);
   Serial.print(" ");
+  Serial.print(encA.get_signed_inv_vel());
+  Serial.print(" ");
   Serial.print(encB.position);
   Serial.print(" ");
   Serial.print(encB.error);
+  Serial.print(" ");
+  Serial.print(encB.get_signed_inv_vel());
   for(int i=0;i<4;i++){
     Serial.print(" ");
     Serial.print(digitalRead(switches[i]));
