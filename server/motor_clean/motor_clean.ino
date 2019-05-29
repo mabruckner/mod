@@ -19,8 +19,8 @@ Servo servo;
 //Servo servo(5, 125, 6, 12);
 //PID pidA(4.0, 5.0, 0.5);
 //PID pidB(4.0, 5.0, 0.5); 
-PID pidA(0.5, 0.5, 0.0);
-PID pidB(0.5, 0.5, 0.0); 
+PID pidA(0.5, 0.5, 0.0, 2.0);
+PID pidB(0.5, 0.5, 0.0, 2.0); 
 
 int switches[4] = {A0, A1, A2, A3};
 
@@ -115,10 +115,12 @@ void loop() {
   prev = ticks;
   float delta = ((float) diff) / 62500.0;
   float pA = ((float) encA.position) / 24.0;
+  float vA = encA.get_vel(62500.0 / 16) / 24.0;
   float pB = ((float) encB.position) / 24.0;
+  float vB = encB.get_vel(62500.0 / 16) / 24.0;
   t += delta;
-  float controlA = pidA.output(pA, delta);
-  float controlB = pidB.output(pB, delta);
+  float controlA = pidA.output_velinput(pA, vA, delta);
+  float controlB = pidB.output_velinput(pB, vB, delta);
   bridgeA.set(controlA);
   bridgeB.set(controlB);
   

@@ -46,6 +46,9 @@ Encoder::Encoder(int a, int b) {
   Bpin = b;
   position = 0;
   error = 0;
+  inv_vel = 0x4000;
+  positive = true;
+  count = 0;
   Astate = digitalRead(a);
   Bstate = digitalRead(b);
 }
@@ -117,10 +120,13 @@ int Encoder::get_signed_inv_vel() {
     }
 }
 
-PID::PID(float p, float i, float d) {
+PID::PID(float p, float i, float d, float MaxVel) {
   P = p;
   I = i;
   D = d;
+  maxvel = MaxVel;
+  current = 0.0;
+
   target = 0.0;
   reset();
 }
@@ -132,17 +138,36 @@ void PID::reset() {
 }
 
 
-float PID::output(float inp, float delta) {
-  float diff = target - inp;
+float PID::output_velinput(float inp, float vel, float delta) {
   if (init) {
+    current = inp;
     init = false;
-    previous = diff;
+    previous = 0.0;
     return 0.0;
   }
-  float derivative = (diff - previous) / delta;
+  if( current != target) {
+      if(current > target) {
+          current -= maxvel * delta;
+          if( current < target) {
+              current = target;
+          }
+      } else {
+          current += maxvel * delta;
+          if( current > target) {
+              current = target;
+          }
+      }
+  }
+  float diff = current - inp;
   acc += delta * (diff + previous) / 2.0; // trapezoidal integration
   previous = diff;
-  return (diff * P + acc * I + derivative * D);
+  return (diff * P + acc * I + vel * D);
+}
+
+float PID::output(float inp, float delta) {
+  float diff = target - inp;
+  float derivative = (diff - previous) / delta;
+  return output_velinput(inp, derivative, delta);
 }
 
 

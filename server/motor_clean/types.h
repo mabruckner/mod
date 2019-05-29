@@ -38,16 +38,19 @@ class Encoder {
 
 class PID {
   public:
-    PID(float, float, float);
+    PID(float, float, float, float);
     float output(float, float);
+    float output_velinput(float, float, float);
     void reset();
     float target;
   private:
     float P;
     float I;
     float D;
+    float maxvel;
     float previous;
     float acc;
+    float current;
     bool init;
 };
 
