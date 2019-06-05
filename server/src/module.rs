@@ -5,21 +5,74 @@ use std::time::Duration;
 use std::path::Path;
 use std::rc::Rc;
 use std::cell::RefCell;
+use std::sync::{Arc, Mutex};
 
 use kiss3d::light::Light;
 use kiss3d::window::Window;
 use kiss3d::loader;
 use nalgebra::*;
+use motor::Manager;
 
 use std::sync::mpsc;
 
 use crate::control::*;
 
-pub struct ModControl {
-    send: mpsc::Sender<ModuleState>,
+pub struct ModControl<M:Manager> {
+    manager: Arc<Mutex<M>>,
+    layout: ModLayout
 }
 
-impl ModControl {
+#[derive(Debug)]
+pub struct ModLayout {
+    pub hinge: String,
+    pub axial: String,
+    pub diff_a: String,
+    pub diff_b: String,
+}
+
+impl ModLayout {
+    pub fn new_a() -> Self {
+        ModLayout {
+            hinge: "A_Hinge".into(),
+            axial: "A_Axial".into(),
+            diff_a: "A_Diff_Planar".into(),
+            diff_b: "A_Diff".into(),
+        }
+    }
+    pub fn new_b() -> Self {
+        ModLayout {
+            hinge: "B_Hinge".into(),
+            axial: "B_Axial".into(),
+            diff_a: "B_Diff_Planar".into(),
+            diff_b: "B_Diff".into(),
+        }
+    }
+}
+
+impl <M:Manager> ModControl<M> {
+    pub fn new_manager(m: Arc<Mutex<M>>, layout: ModLayout) -> Self {
+        ModControl { 
+            manager: m,
+            layout: layout
+        }
+    }
+    pub fn set(&mut self, state: ModuleState) -> () {
+        let target = state.nearest_valid();
+        let mut dev = self.manager.lock().unwrap();
+        dbg!(dev.get_motors());
+        dbg!(&self.layout);
+        dbg!(&target);
+        dbg!(dev.set_motor_rad(&self.layout.hinge, target.hinge));
+        dbg!(dev.set_motor_rad(&self.layout.axial, target.axial));
+        // near_diff = (diff_a + diff_b) / 2.0
+        // far_diff = (diff_a - diff_b) / 2.0
+        // diff_a = near_diff + far_diff
+        // diff_b = near_diff - far_diff
+        dev.set_motor_rad(&self.layout.diff_a, target.near_diff + target.far_diff);
+        dev.set_motor_rad(&self.layout.diff_b, target.near_diff - target.far_diff);
+    }
+}
+/*
     pub fn new(mut diff: Control, mut hinge: Control, desc: ModDesc, speed: f32) -> Self {
         let (send, recv) = mpsc::channel::<ModuleState>();
         std::thread::spawn(move || {
@@ -220,7 +273,7 @@ impl ModControl {
     pub fn set(&mut self, state: ModuleState) -> () {
         self.send.send(state);
     }
-}
+}*/
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub struct ModuleState {

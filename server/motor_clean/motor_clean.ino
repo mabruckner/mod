@@ -132,6 +132,14 @@ void loop() {
       pidA.target = ((float) a) / 24.0;
       pidB.target = ((float) b) / 24.0;
     }
+    if(s == 'a') {
+      long a = Serial.parseInt();
+      pidA.target = ((float) a) / 24.0;
+    }
+    if(s == 'b') {
+      long b = Serial.parseInt();
+      pidB.target = ((float) b) / 24.0;
+    }
     if(s == 's') {
       status();
     }

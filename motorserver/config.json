@@ -1,0 +1,89 @@
+{
+  "boards": {
+    "0": {
+      "a": {
+        "name": "A_Diff_Planar",
+        "counts_per_rev": 1152.0
+      },
+      "b": {
+        "name": "A_Diff",
+        "counts_per_rev": 1152.0
+      },
+      "servo": {
+        "name": "A_Diff",
+        "extents": [
+          20,
+          45
+        ]
+      }
+    },
+    "1": {
+      "a": {
+        "name": "A_Hinge",
+        "counts_per_rev": 1152.0
+      },
+      "b": {
+        "name": "A_Axial",
+        "counts_per_rev": 2430.0
+      },
+      "servo": {
+        "name": "A_Hinge",
+        "extents": [
+          20,
+          45
+        ]
+      }
+    },
+    "2": {
+      "a": {
+        "name": "B_Hinge",
+        "counts_per_rev": 1152.0
+      },
+      "b": {
+        "name": "B_Axial",
+        "counts_per_rev": 6480.0
+      },
+      "servo": {
+        "name": "B_Hinge",
+        "extents": [
+          20,
+          45
+        ]
+      }
+    },
+    "3": {
+      "a": {
+        "name": "B_Diff_Coplanar",
+        "counts_per_rev": 1152.0
+      },
+      "b": {
+        "name": "B_Diff",
+        "counts_per_rev": 1152.0
+      },
+      "servo": {
+        "name": "B_Diff",
+        "extents": [
+          20,
+          45
+        ]
+      }
+    },
+    "5": {
+      "a": {
+        "name": "4_a_empty",
+        "counts_per_rev": 20.0
+      },
+      "b": {
+        "name": "4_b_empty",
+        "counts_per_rev": 20.0
+      },
+      "servo": {
+        "name": "Gripper",
+        "extents": [
+          10,
+          180
+        ]
+      }
+    }
+  }
+}

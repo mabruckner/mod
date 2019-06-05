@@ -1,6 +1,8 @@
 extern crate kiss3d;
 extern crate nalgebra;
 extern crate serial;
+
+use motor::Manager;
 //extern crate actix_web;
 
 use kiss3d::light::Light;
@@ -17,7 +19,7 @@ use std::time::Duration;
 use std::io;
 use std::io::{BufRead, BufReader, Write};
 
-use std::sync::mpsc;
+use std::sync::{mpsc, Arc, Mutex};
 
 mod control;
 use control::*;
@@ -31,7 +33,7 @@ use arm::*;
 mod controller;
 use controller::*;
 
-fn command(mod_a: &mut ModControl, mod_b: &mut ModControl) {
+fn command<M:Manager>(mod_a: &mut ModControl<M>, mod_b: &mut ModControl<M>) {
     let config = ModuleConfig {
         axial_cprad: 100.0,
         hinge_cprad: 100.0,
@@ -100,7 +102,7 @@ fn command(mod_a: &mut ModControl, mod_b: &mut ModControl) {
     }
 }
 
-fn controller_sim(mod_a: ModControl, mod_b: ModControl) {
+fn controller_sim<M:Manager + Send + 'static>(mod_a: ModControl<M>, mod_b: ModControl<M>) {
     let config = ModuleConfig {
         axial_cprad: 100.0,
         hinge_cprad: 100.0,
@@ -146,9 +148,11 @@ struct ArmState {
 }
 
 fn main() {
-    let (mut a, mut b) = ModControl::new_kiss_pair(0.1);
-    controller_sim(a, b);
-    //command(&mut a, &mut b);
+    let manager = Arc::new(Mutex::new(motor::DirectManager::new(motor::load_config("config.json").unwrap())));
+    let mut a = ModControl::new_manager(manager.clone(), ModLayout::new_a());//new_kiss_pair(0.1);
+    let mut b = ModControl::new_manager(manager.clone(), ModLayout::new_b());//new_kiss_pair(0.1);
+    //controller_sim(a, b);
+    command(&mut a, &mut b);
     //control_main();
 }
 
@@ -174,8 +178,8 @@ fn control_main() {
     let c1 = controls.remove(0);
     let c2 = controls.remove(0);
     let c3 = controls.remove(0);
-    let mut a = ModControl::new(c0, c1, ModDesc::new_default(), 0.1);
-    let mut b = ModControl::new(c3, c2, ModDesc::new_default_b(), 0.1);
+    let mut a = ModControl::new_manager(Arc::new(Mutex::new(())), ModLayout::new_a());//new_kiss_pair(0.1);
+    let mut b = ModControl::new_manager(Arc::new(Mutex::new(())), ModLayout::new_b());//new_kiss_pair(0.1);
     command(&mut a, &mut b);
 }
 fn old_main() {

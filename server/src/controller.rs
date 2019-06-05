@@ -1,4 +1,5 @@
 use nalgebra::*;
+use motor::Manager;
 
 use std::thread;
 use std::time::{Duration, Instant};
@@ -14,7 +15,7 @@ pub enum ControllerCommand {
     Rest
 }
 
-pub fn create_control_endpoint(mut mod_a: ModControl, mut mod_b: ModControl, config: ModuleConfig, half_life: f32, timeout: Duration) -> mpsc::Sender<ControllerCommand> {
+pub fn create_control_endpoint<M:Manager + Send + 'static>(mut mod_a: ModControl<M>, mut mod_b: ModControl<M>, config: ModuleConfig, half_life: f32, timeout: Duration) -> mpsc::Sender<ControllerCommand> {
     let (send, recv) = mpsc::channel::<ControllerCommand>();
     thread::spawn(move || {
         let mut control: Vector4<f32> = Vector4::zeros();

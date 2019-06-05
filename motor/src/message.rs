@@ -96,6 +96,8 @@ pub fn bind_port(mut port: serial::SystemPort) -> Result<(mpsc::Receiver<BoardOu
                             BoardInput::GetStatus => writeln!(port, "s"),
                             BoardInput::SetServo(x) => writeln!(port, "x {}", x),
                             BoardInput::SetMotors(a, b) => writeln!(port, "m {} {}", a, b),
+                            BoardInput::SetMotor(MotorSelect::A, val) => writeln!(port, "a {}", val),
+                            BoardInput::SetMotor(MotorSelect::B, val) => writeln!(port, "b {}", val),
                             BoardInput::SetID(x) => writeln!(port, "d {}", x)
                         };
                     },
@@ -117,11 +119,18 @@ pub fn bind_port(mut port: serial::SystemPort) -> Result<(mpsc::Receiver<BoardOu
 }
 
 #[derive(Debug)]
+pub enum MotorSelect {
+    A,
+    B,
+}
+
+#[derive(Debug)]
 pub enum BoardInput {
     GetID,
     GetStatus,
     SetServo(u8),
     SetMotors(i16, i16),
+    SetMotor(MotorSelect, i16),
     SetID(u8)
 }
 
