@@ -1,4 +1,6 @@
+#[cfg(feature="nonmanager")]
 use crate::config::*;
+#[cfg(feature="nonmanager")]
 use crate::message::*;
 use std::thread;
 use std::time;
@@ -17,11 +19,13 @@ pub trait Manager {
     fn set_servo(&mut self, name: &str, value: f32) -> Result<(), ()>;
 }
 
+#[cfg(feature="nonmanager")]
 struct DeviceLayer {
     config: DeviceConfig,
     boards: Vec<(PathBuf, Option<usize>, mpsc::Sender<BoardInput>, mpsc::Receiver<BoardOutput>)>,
 }
 
+#[cfg(feature="nonmanager")]
 impl DeviceLayer {
     fn new(config: DeviceConfig) -> Self {
         DeviceLayer {
@@ -123,10 +127,12 @@ impl DeviceLayer {
     }
 }
 
+#[cfg(feature="nonmanager")]
 pub struct DirectManager {
     layer: Arc<Mutex<DeviceLayer>>
 }
 
+#[cfg(feature="nonmanager")]
 impl DirectManager {
     pub fn new(config: DeviceConfig) -> Self {
         let mut layer = DeviceLayer::new(config);
@@ -148,6 +154,7 @@ impl DirectManager {
     }
 }
 
+#[cfg(feature="nonmanager")]
 impl Manager for DirectManager {
     fn get_motors(&self) -> Vec<String> {
         let dev = self.layer.lock().unwrap();
@@ -200,5 +207,58 @@ impl Manager for () {
     }
     fn set_servo(&mut self, name: &str, val: f32) -> Result<(), ()> {
         Err(())
+    }
+}
+
+
+#[cfg(feature="clientmanager")]
+pub struct ClientManager {
+    servers: Vec<String>
+}
+
+#[cfg(feature="clientmanager")]
+impl ClientManager {
+    pub fn new(servers: Vec<String>) -> Self {
+        ClientManager {
+            servers: servers
+        }
+    }
+}
+
+#[cfg(feature="clientmanager")]
+impl Manager for ClientManager {
+    fn get_motors(&self) -> Vec<String> {
+        let mut out = Vec::new();
+        for server in &self.servers {
+            if let Ok(mut data) = reqwest::get(&format!("{}/motors", server)) {
+                if let Ok(lst) = data.json::<Vec<String>>() {
+                    out.extend(lst.into_iter());
+                }
+            }
+        }
+        out
+    }
+    fn get_servos(&self) -> Vec<String> {
+        let mut out = Vec::new();
+        for server in &self.servers {
+            if let Ok(mut data) = reqwest::get(&format!("{}/motors", server)) {
+                if let Ok(lst) = data.json::<Vec<String>>() {
+                    out.extend(lst.into_iter());
+                }
+            }
+        }
+        out
+    }
+    fn set_motor(&mut self, name: &str, val: f32) -> Result<(), ()> {
+        for server in &self.servers {
+            reqwest::get(&format!("{}/motor?name={}&value={}", server, name, val));
+        }
+        Ok(())
+    }
+    fn set_servo(&mut self, name: &str, val: f32) -> Result<(), ()> {
+        for server in &self.servers {
+            reqwest::get(&format!("{}/servo?name={}&value={}", server, name, val));
+        }
+        Ok(())
     }
 }

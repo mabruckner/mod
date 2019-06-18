@@ -2,7 +2,8 @@ use actix_web::{http, server, App, Path, State, Responder, Json, Query};
 use std::sync::{Arc, Mutex};
 use motor;
 use motor::Manager;
-use serde_derive::Deserialize;
+use serde::Deserialize;
+use std::env::args;
 
 fn get_servos(state: State<MotorApp>) -> std::io::Result<Json<Vec<String>>> {
     let dev = state.manager.lock().unwrap();
@@ -37,7 +38,11 @@ struct MotorApp {
 }
 
 fn main() -> std::io::Result<()> {
-    let manager = Arc::new(Mutex::new(motor::DirectManager::new(motor::load_config("config.json").unwrap())));
+    let mut arg = args();
+    arg.next();
+    let config_path = arg.next().unwrap_or("config.json".into());
+    let bind = arg.next().unwrap_or("127.0.0.1:8080".into());
+    let manager = Arc::new(Mutex::new(motor::DirectManager::new(motor::load_config(&config_path).unwrap())));
 
     let state = MotorApp {
         manager: manager
@@ -50,7 +55,7 @@ fn main() -> std::io::Result<()> {
             .resource("/motors", |r| r.with(get_motors))
             .resource("/motor", |r| r.method(http::Method::GET).with(set_motor))
     })
-        .bind("127.0.0.1:8080")?
+        .bind(bind)?
         .run();
     Ok(())
 }

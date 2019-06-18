@@ -4,8 +4,12 @@ version = "0.1.0"
 authors = ["Mitchell Bruckner <mbruckner807@gmail.com>"]
 edition = "2018"
 
+[features]
+default = []
+kiss = []
+
 [dependencies]
 nalgebra="0.16"
-kiss3d = "0.16"
+#kiss3d = "0.16"
 serial = "*"
-motor = { path = "../motor" }
+motor = { path = "../motor", features=["clientmanager"], default-features = false }

@@ -1,12 +1,11 @@
-extern crate kiss3d;
 extern crate nalgebra;
 extern crate serial;
+
+use std::env::args;
 
 use motor::Manager;
 //extern crate actix_web;
 
-use kiss3d::light::Light;
-use kiss3d::window::Window;
 use nalgebra::*;
 
 //use actix_web::{web, App, HttpServer, Responder};
@@ -148,11 +147,12 @@ struct ArmState {
 }
 
 fn main() {
-    let manager = Arc::new(Mutex::new(motor::DirectManager::new(motor::load_config("config.json").unwrap())));
+    let servers:Vec<String> = args().skip(1).collect();
+    let manager = Arc::new(Mutex::new(motor::ClientManager::new(servers)));
     let mut a = ModControl::new_manager(manager.clone(), ModLayout::new_a());//new_kiss_pair(0.1);
     let mut b = ModControl::new_manager(manager.clone(), ModLayout::new_b());//new_kiss_pair(0.1);
-    //controller_sim(a, b);
-    command(&mut a, &mut b);
+    controller_sim(a, b);
+    //command(&mut a, &mut b);
     //control_main();
 }
 
@@ -206,6 +206,7 @@ fn old_main() {
     }
 }
 
+#[cfg(feature="kiss")]
 fn display_test() {
     let config = ModuleConfig {
         axial_cprad: 100.0,

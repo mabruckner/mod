@@ -4,8 +4,15 @@ version = "0.1.0"
 authors = ["Mitchell Bruckner <mbruckner807@gmail.com>"]
 edition = "2018"
 
+[features]
+nonmanager = ["serde", "serde_json", "serial", "regex"]
+clientmanager = ["reqwest"]
+default = ["nonmanager"]
+
 [dependencies]
-serial = "*"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-regex = "*"
+serial = { version =  "*", optional = true }
+serde = { version = "1.0", features = ["derive"], optional = true }
+serde_json = { version = "1.0", optional = true }
+regex = { version = "*", optional = true }
+reqwest = { version = "0.9.18", optional = true }
+#hyper = { version = "0.12", optional=true

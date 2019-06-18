@@ -7,8 +7,11 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use std::sync::{Arc, Mutex};
 
+#[cfg(feature="kiss")]
 use kiss3d::light::Light;
+#[cfg(feature="kiss")]
 use kiss3d::window::Window;
+#[cfg(feature="kiss")]
 use kiss3d::loader;
 use nalgebra::*;
 use motor::Manager;
@@ -59,17 +62,19 @@ impl <M:Manager> ModControl<M> {
     pub fn set(&mut self, state: ModuleState) -> () {
         let target = state.nearest_valid();
         let mut dev = self.manager.lock().unwrap();
-        dbg!(dev.get_motors());
+        /*dbg!(dev.get_motors());
         dbg!(&self.layout);
         dbg!(&target);
         dbg!(dev.set_motor_rad(&self.layout.hinge, target.hinge));
-        dbg!(dev.set_motor_rad(&self.layout.axial, target.axial));
+        dbg!(dev.set_motor_rad(&self.layout.axial, target.axial));*/
         // near_diff = (diff_a + diff_b) / 2.0
         // far_diff = (diff_a - diff_b) / 2.0
         // diff_a = near_diff + far_diff
         // diff_b = near_diff - far_diff
         dev.set_motor_rad(&self.layout.diff_a, target.near_diff + target.far_diff);
         dev.set_motor_rad(&self.layout.diff_b, target.near_diff - target.far_diff);
+        dev.set_motor_rad(&self.layout.hinge, target.hinge);
+        dev.set_motor_rad(&self.layout.axial, target.axial);
     }
 }
 /*

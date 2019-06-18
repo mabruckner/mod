@@ -6,6 +6,5 @@ edition = "2018"
 
 [dependencies]
 motor = {path = "../motor" }
-actix-web = "0.7"
-serde_derive = "*"
-serde = "*"
+actix-web = { version = "0.7", default-features=false }
+serde = { version = "*", features=["derive"] }
