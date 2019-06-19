@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    </head>
+    <body>
+        <h1>Control process ({{status}})</h1>
+        <a href="/startcontrol"><h3>START CONTROL PROCESS</h3></a>
+        <a href="/stopcontrol"><h3>STOP CONTROL PROCESS</h3></a>
+
+        <h1>Docking systems</h1>
+        {% for servo in servo_list %}
+        <h3>{{servo}}</h3>
+        <form action="/setservo/{{servo}}">
+            <button type="submit" name="value" value="1.0">open</button>
+            <button type="submit" name="value" value="0.0">close</button>
+            <a href="/control/{{servo}}">Fine control</a>
+        </form>
+        {% endfor %}
+    </body>
+</html>
