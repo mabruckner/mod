@@ -1,12 +1,6 @@
 <!DOCTYPE html>
 <html>
     <head>
-    <script>
-        function callback() {
-            console.log("{{name}}");
-        };
-        window.setInterval(callback, 100);
-    </script>
 <style>
 input[type=range] {
     width: 100%;
@@ -32,6 +26,16 @@ input[type=range]::-moz-range-thumb {
 </style>
     </head>
     <body>
-        <input type="range"></input>
+        <input type="range" max="1.0" min="0.0" step="0.01"></input>
     </body>
+    <script>
+        var element = document.querySelector("input");
+        function callback() {
+            fetch("/setservo/{{name}}?value="+element.value);
+
+            console.log("{{name}}");
+            console.log(element.value);
+        };
+        window.setInterval(callback, 150);
+    </script>
 </html>

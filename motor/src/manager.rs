@@ -2,6 +2,12 @@
 use crate::config::*;
 #[cfg(feature="nonmanager")]
 use crate::message::*;
+#[cfg(feature="clientmanager")]
+use hyper::rt::Future;
+#[cfg(feature="clientmanager")]
+use futures::stream::Stream;
+#[cfg(feature="clientmanager")]
+use futures::sink::Sink;
 use std::thread;
 use std::time;
 use std::sync::mpsc;
@@ -213,14 +219,54 @@ impl Manager for () {
 
 #[cfg(feature="clientmanager")]
 pub struct ClientManager {
-    servers: Vec<String>
+    servers: Vec<hyper::Uri>,
+    client: hyper::Client<hyper::client::HttpConnector, hyper::Body>,
+    futures: Vec<hyper::client::ResponseFuture>,
+    sender: tokio::sync::mpsc::Sender<(String, f32)>
 }
 
 #[cfg(feature="clientmanager")]
 impl ClientManager {
     pub fn new(servers: Vec<String>) -> Self {
+        let servers: Vec<hyper::Uri> = servers.iter().map(|x| x.parse::<hyper::Uri>().unwrap()).collect();
+        let man_servers = servers.clone();
+        let (send, recv) = tokio::sync::mpsc::channel(8);
+        thread::spawn(move || {
+            hyper::rt::run(hyper::rt::lazy(move || {
+                let client = hyper::Client::new();
+                hyper::rt::spawn(recv.for_each(move |(name, value)| {
+                    for server in &servers {
+                        let target: hyper::Uri = format!("{}motor?name={}&value={}", server, name, value).parse().unwrap();
+                        let start = time::Instant::now();
+                        hyper::rt::spawn(client.get(target).map(move |x| {
+                            println!("{:?}", start.elapsed());
+                            ()
+                        }).map_err(|x| {
+                            //println!("{:?}", x);
+                            ()
+                        }));
+                    }
+                    Ok(())
+                }).map_err(|_| ()));
+                Ok(())
+            }))
+        });
         ClientManager {
-            servers: servers
+            servers: man_servers,
+            sender: send,
+            client: hyper::Client::new(),
+            futures: Vec::new()
+        }
+    }
+    fn drain_futures(&mut self) -> () {
+        for i in (0..self.futures.len()).rev() {
+            let val = self.futures[i].poll();
+            match val {
+                Ok(futures::Async::NotReady) => {
+                self.futures.swap_remove(i);
+                },
+                _ => ()
+            }
         }
     }
 }
@@ -230,10 +276,11 @@ impl Manager for ClientManager {
     fn get_motors(&self) -> Vec<String> {
         let mut out = Vec::new();
         for server in &self.servers {
-            if let Ok(mut data) = reqwest::get(&format!("{}/motors", server)) {
-                if let Ok(lst) = data.json::<Vec<String>>() {
+            if let Ok(mut data) = self.client.get(format!("{}/motors", server).parse().unwrap()).wait() {
+                /*if let Ok(lst) = data.json::<Vec<String>>() {
                     out.extend(lst.into_iter());
-                }
+                }*/
+                unimplemented!();
             }
         }
         out
@@ -250,9 +297,7 @@ impl Manager for ClientManager {
         out
     }
     fn set_motor(&mut self, name: &str, val: f32) -> Result<(), ()> {
-        for server in &self.servers {
-            reqwest::get(&format!("{}/motor?name={}&value={}", server, name, val));
-        }
+        self.sender.try_send((name.into(), val));
         Ok(())
     }
     fn set_servo(&mut self, name: &str, val: f32) -> Result<(), ()> {

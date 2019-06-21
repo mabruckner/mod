@@ -8,7 +8,8 @@ app = Flask(__name__)
 
 dynamic_list = False
 
-servers = ['http://192.168.1.57:8080']
+servers = []
+#['http://10.0.0.1:8080']
 servo_list = []
 motor_list = []
 

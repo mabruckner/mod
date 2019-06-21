@@ -31,7 +31,7 @@ pub fn create_control_endpoint<M:Manager + Send + 'static>(mut mod_a: ModControl
                 current_time = new_current;
                 diff
             };
-            thread::sleep(Duration::from_millis(10));
+            thread::sleep(Duration::from_millis(100));
             loop {
                 match recv.try_recv() {
                     Ok(ControllerCommand::Motion(vec)) => {
@@ -58,6 +58,7 @@ pub fn create_control_endpoint<M:Manager + Send + 'static>(mut mod_a: ModControl
                 z: state[1],
                 theta: consts::PI*state[2]/180.0,
             };
+            let set_time = Instant::now();
             if resting {
                 let empty_state = ModuleState::new();
                 mod_a.set(empty_state.clone());
@@ -69,6 +70,8 @@ pub fn create_control_endpoint<M:Manager + Send + 'static>(mut mod_a: ModControl
                     mod_b.set(s2);
                 }
             }
+            let x = set_time.elapsed();
+            //println!("{}  {}", x.as_secs(), x.subsec_millis());
         }
     });
     send
