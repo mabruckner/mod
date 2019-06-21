@@ -237,9 +237,9 @@ impl ClientManager {
                 hyper::rt::spawn(recv.for_each(move |(name, value)| {
                     for server in &servers {
                         let target: hyper::Uri = format!("{}motor?name={}&value={}", server, name, value).parse().unwrap();
-                        let start = time::Instant::now();
+                        //let start = time::Instant::now();
                         hyper::rt::spawn(client.get(target).map(move |x| {
-                            println!("{:?}", start.elapsed());
+                            //println!("{:?}", start.elapsed());
                             ()
                         }).map_err(|x| {
                             //println!("{:?}", x);
