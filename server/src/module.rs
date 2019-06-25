@@ -67,12 +67,12 @@ impl <M:Manager> ModControl<M> {
         dbg!(&target);
         dbg!(dev.set_motor_rad(&self.layout.hinge, target.hinge));
         dbg!(dev.set_motor_rad(&self.layout.axial, target.axial));*/
-        // near_diff = (diff_a + diff_b) / 2.0
-        // far_diff = (diff_a - diff_b) / 2.0
+        // near_diff = (diff_a - diff_b) / 2.0
+        // far_diff = (diff_a + diff_b) / 2.0
         // diff_a = near_diff + far_diff
-        // diff_b = near_diff - far_diff
+        // diff_b = far_diff - near_diff
         dev.set_motor_rad(&self.layout.diff_a, target.near_diff + target.far_diff);
-        dev.set_motor_rad(&self.layout.diff_b, target.near_diff - target.far_diff);
+        dev.set_motor_rad(&self.layout.diff_b, target.far_diff - target.near_diff);
         dev.set_motor_rad(&self.layout.hinge, target.hinge);
         dev.set_motor_rad(&self.layout.axial, target.axial);
     }

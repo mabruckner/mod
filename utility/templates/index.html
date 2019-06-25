@@ -11,8 +11,8 @@
         {% for servo in servo_list %}
         <h3>{{servo}}</h3>
         <form action="/setservo/{{servo}}">
-            <button type="submit" name="value" value="1.0">open</button>
-            <button type="submit" name="value" value="0.0">close</button>
+            <button type="submit" name="value" value="0.0">open</button>
+            <button type="submit" name="value" value="1.0">close</button>
             <a href="/control/{{servo}}">Fine control</a>
         </form>
         {% endfor %}

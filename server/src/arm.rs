@@ -11,12 +11,13 @@ pub struct Cyl {
 
 /// return order: (far_diff, near_diff, axial)
 pub fn theta_phi_to_diff(theta: f32, phi: f32) -> (f32, f32, f32) {
-    let theta = theta + consts::FRAC_PI_2;
-    let near = (phi.sin() * theta.sin()).asin();
-    let far = (phi.sin() * theta.cos() / near.cos()).asin();
+    //let theta = theta + consts::FRAC_PI_2;
+    let near = (phi.sin() * theta.cos()).asin();
+    let far = (phi.sin() * theta.sin() / near.cos()).asin();
     let axial_y = theta.sin() * phi.sin()/near.cos();
     let axial_x = theta.cos() / near.cos();
-    let axial = (-axial_x).atan2(-axial_y);
+    //let axial = (-axial_x).atan2(-axial_y);
+    let axial = theta + ((theta.sin()*theta.cos()*(1.0 - phi.cos()))/near.cos()).asin();
     (far, near, axial)
 }
 
@@ -59,6 +60,7 @@ pub fn sym_2mod_a(mut pos: Cyl, config: &ModuleConfig, phi: f32) -> Option<(Modu
         near_diff: dest_phi + mod_b.hinge,
         far_diff: 0.0,*/
     };
+    //println!("{:?}", mod_a);
 
     Some((mod_a, mod_b))
 }

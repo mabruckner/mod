@@ -33,20 +33,29 @@ proc = subprocess.Popen(["./server"] + servers, stdin=subprocess.PIPE)
 
 def handler(sig, frame):
     global bus
+    global proc
     print("Exiting")
-    proc.stdin.write(b'rest\n')
-    time.sleep(0.1)
+    proc.stdin.write(b'\nrest\n')
+    proc.stdin.flush()
+    time.sleep(0.3)
     proc.stdin.write(b'quit\n')
+    #proc.stdin.flush()
     time.sleep(0.3)
     bus.close()
     sys.exit(0)
 
 signal.signal(signal.SIGINT, handler)
 
+mul = 3.0;
+
 while True:
     try:
         vals = read_all(bus)
+        print(vals)
+        for i in range(4) :
+            vals[i] *= mul
         proc.stdin.write(bytes("a {} {} {} {}\n".format(vals[0], vals[1], vals[2], vals[3]), "utf-8"))
+        proc.stdin.flush()
     except OSError:
         print("ERROR")
-    time.sleep(0.1)
+    time.sleep(0.2)

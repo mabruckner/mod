@@ -30,12 +30,16 @@ input[type=range]::-moz-range-thumb {
     </body>
     <script>
         var element = document.querySelector("input");
+        var prev = 0.0;
         function callback() {
-            fetch("/setservo/{{name}}?value="+element.value);
+            var val = element.value;
+            if(val != prev) {
+                fetch("/setservo/{{name}}?value="+val);
 
-            console.log("{{name}}");
-            console.log(element.value);
+                console.log("{{name}}");
+                console.log(element.value);
+            }
         };
-        window.setInterval(callback, 150);
+        window.setInterval(callback, 200);
     </script>
 </html>
