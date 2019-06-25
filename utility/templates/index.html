@@ -13,6 +13,7 @@
         <form action="/setservo/{{servo}}">
             <button type="submit" name="value" value="0.0">open</button>
             <button type="submit" name="value" value="1.0">close</button>
+            <button type="submit" name="value" value="2.0">close-double</button>
             <a href="/control/{{servo}}">Fine control</a>
         </form>
         {% endfor %}
