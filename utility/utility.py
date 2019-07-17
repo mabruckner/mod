@@ -8,8 +8,7 @@ app = Flask(__name__)
 
 dynamic_list = False
 
-servers = ['http://10.0.0.142:8080']
-#['http://10.0.0.1:8080']
+servers = ['http://10.0.0.1:8080', 'http://10.0.0.142:8080']
 servo_list = []
 motor_list = []
 
@@ -62,7 +61,10 @@ def stop_control():
 def set_servo(name):
     val = request.args["value"]
     for server in servers :
-        requests.get('{}/servo'.format(server), params={"name": name, "value": val})
+        try:
+            requests.get('{}/servo'.format(server), params={"name": name, "value": val}, timeout=0.05)
+        except:
+            pass
     return redirect(url_for('index'))
 
 num = 0
