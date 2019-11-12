@@ -19,7 +19,7 @@ Servo servo;
 //Servo servo(5, 125, 6, 12);
 //PID pidA(4.0, 5.0, 0.5);
 //PID pidB(4.0, 5.0, 0.5); 
-PID pidA(0.5, 0.5, 0.0, 2.0);
+PID pidA(2.0, 0.5, 0.0, 2.0);
 PID pidB(0.5, 0.5, 0.0, 2.0); 
 
 int switches[4] = {A0, A1, A2, A3};
@@ -36,7 +36,7 @@ void setup() {
   for(int i=0; i<4; i++){
     pinMode(switches[i], INPUT);
   }
-  bridgeA.scale = 0.3;
+  bridgeA.scale = 0.4;
   bridgeB.scale = 0.3;
   pidA.target = 0.0;
   pidB.target = 0.0;

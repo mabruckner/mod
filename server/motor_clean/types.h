@@ -52,6 +52,7 @@ class PID {
     float acc;
     float current;
     bool init;
+    bool stall;
 };
 
 

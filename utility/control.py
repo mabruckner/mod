@@ -1,8 +1,31 @@
 from smbus2 import SMBus
+from gpiozero import Button, LED
 import time
 import signal
 import sys
 import subprocess
+import requests
+
+button = Button(18, pull_up=None, active_state=True, bounce_time=0.05)
+leds = []
+state = 0
+current_grip = 0.5
+grip_mul = 0.1
+for p in [17, 27, 22]:
+    leds.append(LED(p))
+leds[0].on()
+
+def inc():
+    global state
+    state = (state + 1) % len(leds)
+    for i in range(len(leds)):
+        if state == i:
+            leds[i].on()
+        else:
+            leds[i].off()
+
+button.when_pressed = inc
+
 
 def read_pos_u16(bus, ident, offset):
     a = bus.read_byte_data(ident, offset)
@@ -13,12 +36,12 @@ def read_pos_float(bus, ident, offset):
     return (read_pos_u16(bus, ident, offset) - 0x200)/0x200
 
 def read_all(bus):
-    out = [0.0, 0.0, 0.0, 0.0]
-    out[0] = read_pos_float(bus, 0x20, 0x3)
-    out[1] = read_pos_float(bus, 0x20, 0x5)
-    out[2] = read_pos_float(bus, 0x21, 0x3)
-    out[3] = read_pos_float(bus, 0x21, 0x5)
-    for i in range(4) :
+    out = [0.0, 0.0]
+#    out[0] = read_pos_float(bus, 0x20, 0x3)
+#    out[1] = read_pos_float(bus, 0x20, 0x5)
+    out[0] = read_pos_float(bus, 0x21, 0x3)
+    out[1] = read_pos_float(bus, 0x21, 0x5)
+    for i in range(2) :
         if abs(out[i]) < 0.03 :
             out[i] = 0.0
     return out
@@ -50,12 +73,30 @@ mul = 3.0;
 
 while True:
     try:
-        vals = read_all(bus)
-        print(vals)
-        for i in range(4) :
-            vals[i] *= mul
-        proc.stdin.write(bytes("a {} {} {} {}\n".format(vals[0], vals[1], vals[2], vals[3]), "utf-8"))
-        proc.stdin.flush()
+        inp = read_all(bus)
+        print(inp)
+        if state != 2:
+            vals = [0.0, 0.0, 0.0, 0.0]
+            if state == 0:
+                vals[2] = -inp[0]
+                vals[1] = inp[1]
+            else:
+                vals[3] = inp[0]
+                vals[0] = inp[1]
+            for i in range(4) :
+                vals[i] *= mul
+            proc.stdin.write(bytes("a {} {} {} {}\n".format(vals[0], vals[1], vals[2], vals[3]), "utf-8"))
+            proc.stdin.flush()
+        else:
+            current_grip += inp[1] * grip_mul
+            current_grip = max(0.0, min(1.0, current_grip))
+            print("GRIP {}".format(current_grip))
+            if inp[1] != 0.0:
+                for serv in servers:
+                    try:
+                        requests.get("{}/servo?name=Gripper&value={}".format(serv, current_grip), timeout=0.05)
+                    except:
+                        pass
     except OSError:
         print("ERROR")
     time.sleep(0.2)

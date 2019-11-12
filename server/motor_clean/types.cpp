@@ -135,6 +135,7 @@ void PID::reset() {
   previous = 0.0;
   acc = 0.0;
   init = true;
+  stall = false;
 }
 
 
@@ -161,7 +162,18 @@ float PID::output_velinput(float inp, float vel, float delta) {
   float diff = current - inp;
   acc += delta * (diff + previous) / 2.0; // trapezoidal integration
   previous = diff;
-  return (diff * P + acc * I + vel * D);
+  // stall
+  if(fabs(acc * I) > 0.8) {
+    stall = true;
+  }
+  if(stall) {
+    if(abs(target-current) < 0.1) {
+        reset();
+    }
+    return 0.0;
+  } else {
+    return (diff * P + acc * I + vel * D);
+  }
 }
 
 float PID::output(float inp, float delta) {
