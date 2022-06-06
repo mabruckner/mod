@@ -9,7 +9,7 @@ default = []
 kiss = []
 
 [dependencies]
-nalgebra="0.16"
+nalgebra="0.27"
 #kiss3d = "0.16"
 serial = "*"
 motor = { path = "../motor", features=["clientmanager"], default-features = false }
